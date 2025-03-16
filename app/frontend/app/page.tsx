@@ -36,86 +36,91 @@ export default function VoiceTranscriber() {
   useEffect(() => {
     // Initialize WebSocket connection
     const connectWebSocket = () => {
-      // Use relative URL or environment variable for WebSocket connection
-      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const wsUrl = process.env.NEXT_PUBLIC_WS_URL || `${protocol}//${window.location.host}/ws`;
-      
-      const ws = new WebSocket(wsUrl)
-      
-      ws.onopen = () => {
-        console.log('WebSocket connection established')
-        setError(null)
-      }
-      
-      ws.onclose = () => {
-        console.log('WebSocket connection closed')
-        // Try to reconnect after a delay
-        setTimeout(connectWebSocket, 3000)
-      }
-      
-      ws.onerror = () => {
-        console.error('WebSocket error')
-        setError('WebSocket connection error. Please check if the server is running.')
-      }
-      
-      ws.onmessage = (event) => {
-        // Handle incoming messages from the server
-        try {
-          const message = event.data
-          console.log('Received transcription from server:', message)
-          
-          // Add the transcription to our list
-          if (typeof message === 'string') {
-            // Check if the message is an error message
-            if (message.startsWith('Error:') || message.startsWith('Transcription error:')) {
-              setError(message)
-              return
-            }
-            
-            setTranscriptions(prev => {
-              // If we have a processing placeholder, replace it with the actual transcription
-              if (prev.length > 0 && prev[prev.length - 1].isProcessing) {
-                const newTranscriptions = [...prev]
-                newTranscriptions[newTranscriptions.length - 1] = {
-                  id: Date.now(),
-                  text: message,
-                  timestamp: new Date(),
-                  isProcessing: false
-                }
-                return newTranscriptions
-              } else {
-                // Otherwise add a new transcription
-                return [
-                  ...prev,
-                  {
+      try {
+        // Use the environment variable directly
+        const wsUrl = process.env.NEXT_PUBLIC_WS_URL;
+        
+        if (!wsUrl) {
+          console.error('WebSocket URL not configured');
+          setError('WebSocket URL not configured');
+          return;
+        }
+
+        console.log('Connecting to WebSocket:', wsUrl);
+        const ws = new WebSocket(wsUrl);
+        
+        ws.onopen = () => {
+          console.log('WebSocket connection established');
+          setError(null);
+        };
+        
+        ws.onclose = (event) => {
+          console.log('WebSocket connection closed:', event.code, event.reason);
+          // Try to reconnect after a delay
+          setTimeout(connectWebSocket, 3000);
+        };
+        
+        ws.onerror = (error) => {
+          console.error('WebSocket error:', error);
+          setError('WebSocket connection error. Please check if the server is running.');
+        };
+        
+        ws.onmessage = (event) => {
+          console.log('Received message:', event.data);
+          try {
+            const message = event.data;
+            if (typeof message === 'string') {
+              if (message.startsWith('Error:') || message.startsWith('Transcription error:')) {
+                setError(message);
+                return;
+              }
+              
+              setTranscriptions(prev => {
+                if (prev.length > 0 && prev[prev.length - 1].isProcessing) {
+                  const newTranscriptions = [...prev];
+                  newTranscriptions[newTranscriptions.length - 1] = {
                     id: Date.now(),
                     text: message,
                     timestamp: new Date(),
                     isProcessing: false
-                  }
-                ]
-              }
-            })
-            
-            setIsTranscribing(false)
+                  };
+                  return newTranscriptions;
+                } else {
+                  return [
+                    ...prev,
+                    {
+                      id: Date.now(),
+                      text: message,
+                      timestamp: new Date(),
+                      isProcessing: false
+                    }
+                  ];
+                }
+              });
+              
+              setIsTranscribing(false);
+            }
+          } catch (error) {
+            console.error('Error processing message:', error);
+            setIsTranscribing(false);
           }
-        } catch {
-          console.error('Error processing message from server:')
-          setIsTranscribing(false)
-        }
+        };
+        
+        websocketRef.current = ws;
+      } catch (error) {
+        console.error('Error creating WebSocket:', error);
+        setError('Failed to create WebSocket connection');
       }
-      
-      websocketRef.current = ws
-    }
+    };
     
-    connectWebSocket()
+    connectWebSocket();
     
     return () => {
       if (websocketRef.current) {
-        websocketRef.current.close()
+        websocketRef.current.close();
       }
-    }
-  }, [])
+    };
+  }, []);
 
   useEffect(() => {
     // Scroll to bottom when new transcription is added

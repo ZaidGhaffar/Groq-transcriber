@@ -28,13 +28,13 @@ origins = [
     "http://localhost:3000",
     "https://groq-transcriber-wintax.vercel.app",
     "https://www.groq-transcriber-wintax.vercel.app",
-    "https://groq-transcriber-wintax.vercel.app/",
-    "https://www.groq-transcriber-wintax.vercel.app/"
+    "https://e5c2-2407-d000-d-e7da-31c0-365e-f0dd-3320.ngrok.io",
+    "wss://e5c2-2407-d000-d-e7da-31c0-365e-f0dd-3320.ngrok.io"
 ]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],  # Allows all origins
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -45,6 +45,10 @@ TEMP_DIR = tempfile.mkdtemp()
 logger.info(f"Created temporary directory at {TEMP_DIR}")
 
 # Health check endpoint
+@app.get("/")
+async def root():
+    return {"status": "online"}
+
 @app.get("/health")
 async def health_check():
     return JSONResponse(content={"status": "healthy", "service": "groq-transcriber-backend"})

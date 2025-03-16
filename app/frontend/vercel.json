@@ -1,12 +1,17 @@
 {
-  "rewrites": [
+  "version": 2,
+  "routes": [
     {
-      "source": "/ws",
-      "destination": "https://e5c2-2407-d000-d-e7da-31c0-365e-f0dd-3320.ngrok.io/ws"
+      "src": "/ws",
+      "dest": "https://e5c2-2407-d000-d-e7da-31c0-365e-f0dd-3320.ngrok.io/ws"
     },
     {
-      "source": "/health",
-      "destination": "https://e5c2-2407-d000-d-e7da-31c0-365e-f0dd-3320.ngrok.io/health"
+      "src": "/health",
+      "dest": "https://e5c2-2407-d000-d-e7da-31c0-365e-f0dd-3320.ngrok.io/health"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/"
     }
   ],
   "headers": [
@@ -24,6 +29,10 @@
         {
           "key": "Access-Control-Allow-Headers",
           "value": "X-Requested-With, Content-Type, Accept"
+        },
+        {
+          "key": "Access-Control-Allow-Credentials",
+          "value": "true"
         }
       ]
     }
