@@ -1,0 +1,7 @@
+groq
+dotenv
+fastapi
+uvicorn[standard]
+pydub
+websockets
+requests
