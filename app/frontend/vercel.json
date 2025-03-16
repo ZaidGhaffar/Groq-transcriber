@@ -1,17 +1,12 @@
 {
-  "version": 2,
-  "routes": [
+  "rewrites": [
     {
-      "src": "/ws",
-      "dest": "https://e5c2-2407-d000-d-e7da-31c0-365e-f0dd-3320.ngrok.io/ws"
+      "source": "/ws",
+      "destination": "https://e5c2-2407-d000-d-e7da-31c0-365e-f0dd-3320.ngrok.io/ws"
     },
     {
-      "src": "/health",
-      "dest": "https://e5c2-2407-d000-d-e7da-31c0-365e-f0dd-3320.ngrok.io/health"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/"
+      "source": "/health",
+      "destination": "https://e5c2-2407-d000-d-e7da-31c0-365e-f0dd-3320.ngrok.io/health"
     }
   ],
   "headers": [

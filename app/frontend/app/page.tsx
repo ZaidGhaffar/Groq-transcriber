@@ -37,32 +37,30 @@ export default function VoiceTranscriber() {
     // Initialize WebSocket connection
     const connectWebSocket = () => {
       try {
-        // Use the environment variable directly
-        const wsUrl = process.env.NEXT_PUBLIC_WS_URL;
+        // Use the environment variable directly or fallback to relative path
+        const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 
+          (window.location.protocol === 'https:' ? 'wss://' : 'ws://') + 
+          window.location.host + '/ws';
         
-        if (!wsUrl) {
-          console.error('WebSocket URL not configured');
-          setError('WebSocket URL not configured');
-          return;
-        }
-
-        console.log('Connecting to WebSocket:', wsUrl);
+        console.log('Attempting to connect to WebSocket at:', wsUrl);
+        
         const ws = new WebSocket(wsUrl);
         
         ws.onopen = () => {
-          console.log('WebSocket connection established');
+          console.log('WebSocket connection established successfully');
           setError(null);
         };
         
         ws.onclose = (event) => {
           console.log('WebSocket connection closed:', event.code, event.reason);
+          setError('Connection closed. Attempting to reconnect...');
           // Try to reconnect after a delay
           setTimeout(connectWebSocket, 3000);
         };
         
         ws.onerror = (error) => {
           console.error('WebSocket error:', error);
-          setError('WebSocket connection error. Please check if the server is running.');
+          setError('Failed to connect to the server. Please try again later.');
         };
         
         ws.onmessage = (event) => {
