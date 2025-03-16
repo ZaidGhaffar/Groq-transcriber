@@ -124,7 +124,7 @@ export default function VoiceTranscriber() {
             
             setIsTranscribing(false)
           }
-        } catch (err) {
+        } catch (_) {
           console.error('Error processing message from server:')
           setIsTranscribing(false)
         }
@@ -192,7 +192,7 @@ export default function VoiceTranscriber() {
       // Clear previous transcriptions when starting a new recording session
       setTranscriptions([])
       
-    } catch (err) {
+    } catch (_) {
       console.error('Error starting recording:')
       setError("Microphone permission denied. Please allow microphone access.")
       setIsLoading(false)
