@@ -14,36 +14,11 @@ interface Transcription {
   isProcessing?: boolean
 }
 
-// Define types for SpeechRecognition
-interface SpeechRecognitionEvent {
-  results: SpeechRecognitionResultList
-  resultIndex: number
-  error?: Error
-}
-
-interface SpeechRecognitionResultList {
-  [index: number]: SpeechRecognitionResult
-  length: number
-  item(index: number): SpeechRecognitionResult
-}
-
-interface SpeechRecognitionResult {
-  [index: number]: SpeechRecognitionAlternative
-  length: number
-  item(index: number): SpeechRecognitionAlternative
-  isFinal: boolean
-}
-
-interface SpeechRecognitionAlternative {
-  transcript: string
-  confidence: number
-}
-
 // Declare SpeechRecognition type
 declare global {
   interface Window {
-    webkitSpeechRecognition: any
-    SpeechRecognition: any
+    webkitSpeechRecognition: unknown
+    SpeechRecognition: unknown
   }
 }
 
@@ -124,7 +99,7 @@ export default function VoiceTranscriber() {
             
             setIsTranscribing(false)
           }
-        } catch (_) {
+        } catch {
           console.error('Error processing message from server:')
           setIsTranscribing(false)
         }
@@ -192,7 +167,7 @@ export default function VoiceTranscriber() {
       // Clear previous transcriptions when starting a new recording session
       setTranscriptions([])
       
-    } catch (_) {
+    } catch {
       console.error('Error starting recording:')
       setError("Microphone permission denied. Please allow microphone access.")
       setIsLoading(false)
