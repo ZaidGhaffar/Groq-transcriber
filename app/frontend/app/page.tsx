@@ -14,6 +14,31 @@ interface Transcription {
   isProcessing?: boolean
 }
 
+// Define types for SpeechRecognition
+interface SpeechRecognitionEvent {
+  results: SpeechRecognitionResultList
+  resultIndex: number
+  error?: Error
+}
+
+interface SpeechRecognitionResultList {
+  [index: number]: SpeechRecognitionResult
+  length: number
+  item(index: number): SpeechRecognitionResult
+}
+
+interface SpeechRecognitionResult {
+  [index: number]: SpeechRecognitionAlternative
+  length: number
+  item(index: number): SpeechRecognitionAlternative
+  isFinal: boolean
+}
+
+interface SpeechRecognitionAlternative {
+  transcript: string
+  confidence: number
+}
+
 // Declare SpeechRecognition type
 declare global {
   interface Window {
@@ -27,7 +52,6 @@ export default function VoiceTranscriber() {
   const [transcriptions, setTranscriptions] = useState<Transcription[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const recognitionRef = useRef<any>(null)
   const scrollAreaRef = useRef<HTMLDivElement>(null)
   const websocketRef = useRef<WebSocket | null>(null)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
@@ -37,7 +61,11 @@ export default function VoiceTranscriber() {
   useEffect(() => {
     // Initialize WebSocket connection
     const connectWebSocket = () => {
-      const ws = new WebSocket('ws://localhost:8000/ws')
+      // Use relative URL or environment variable for WebSocket connection
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsUrl = process.env.NEXT_PUBLIC_WS_URL || `${protocol}//${window.location.host}/ws`;
+      
+      const ws = new WebSocket(wsUrl)
       
       ws.onopen = () => {
         console.log('WebSocket connection established')
@@ -50,8 +78,8 @@ export default function VoiceTranscriber() {
         setTimeout(connectWebSocket, 3000)
       }
       
-      ws.onerror = (error) => {
-        console.error('WebSocket error:', error)
+      ws.onerror = () => {
+        console.error('WebSocket error')
         setError('WebSocket connection error. Please check if the server is running.')
       }
       
@@ -97,7 +125,7 @@ export default function VoiceTranscriber() {
             setIsTranscribing(false)
           }
         } catch (err) {
-          console.error('Error processing message from server:', err)
+          console.error('Error processing message from server:')
           setIsTranscribing(false)
         }
       }
@@ -165,7 +193,7 @@ export default function VoiceTranscriber() {
       setTranscriptions([])
       
     } catch (err) {
-      console.error('Error starting recording:', err)
+      console.error('Error starting recording:')
       setError("Microphone permission denied. Please allow microphone access.")
       setIsLoading(false)
     }
