@@ -2,6 +2,7 @@ groq
 dotenv
 fastapi
 uvicorn[standard]
-pydub
-websockets
+python-dotenv
 requests
+websockets
+pydub

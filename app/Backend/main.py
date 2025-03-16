@@ -1,5 +1,6 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 import uvicorn
 import asyncio
 import io
@@ -22,8 +23,13 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
+# Updated CORS configuration
 origins = [
     "http://localhost:3000",
+    "https://groq-transcriber-wintax.vercel.app",
+    "https://www.groq-transcriber-wintax.vercel.app",
+    "https://groq-transcriber-wintax.vercel.app/",
+    "https://www.groq-transcriber-wintax.vercel.app/"
 ]
 
 app.add_middleware(
@@ -37,6 +43,11 @@ app.add_middleware(
 # Create a temporary directory to store audio chunks
 TEMP_DIR = tempfile.mkdtemp()
 logger.info(f"Created temporary directory at {TEMP_DIR}")
+
+# Health check endpoint
+@app.get("/health")
+async def health_check():
+    return JSONResponse(content={"status": "healthy", "service": "groq-transcriber-backend"})
 
 class ConnectionManager:
     def __init__(self):
@@ -194,5 +205,16 @@ async def websocket_endpoint(websocket: WebSocket):
                 logger.error(f"Error removing directory: {str(e)}")
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    # Get port from environment variable for production deployment
+    port = int(os.environ.get("PORT", 8000))
+    
+    # In production, don't use reload
+    is_dev = os.environ.get("ENVIRONMENT", "development") == "development"
+    
+    uvicorn.run(
+        "main:app", 
+        host="0.0.0.0", 
+        port=port, 
+        reload=is_dev
+    )
 
